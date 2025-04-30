@@ -5,14 +5,21 @@ import (
 	"strings"
 )
 
+const (
+	emailRgx  = `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
+	domainRgx = `^([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*\.)+[a-zA-Z]{2,}$`
+	urlRegex  = `^(http://|https://|www\.)[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)`
+)
+
 // A string argument
 type StringArg struct {
-	*customArg[string]
+	*Arg[string]
 }
 
 // Returns a string argument instance for the provided value.
 func String(value string) *StringArg {
-	return &StringArg{&customArg[string]{value, []string{}}}
+	custom := &Arg[string]{value, []string{}}
+	return &StringArg{custom}
 }
 
 // Returns a string argument instance for the provided value.
@@ -20,10 +27,10 @@ func S(value string) *StringArg {
 	return String(value)
 }
 
-// Sets the value to the specified value if its empty.
-func (a *StringArg) FallbackIfEmpty(fallbackValue string) *StringArg {
+// Sets the value to the specified value if it's empty.
+func (a *StringArg) FallbackIfEmpty(fallback string) *StringArg {
 	if a.Value == "" {
-		a.Value = fallbackValue
+		a.Value = fallback
 	}
 	return a
 }
@@ -117,12 +124,6 @@ func (a *StringArg) Matches(regex string) *StringArg {
 	return a
 }
 
-const (
-	emailRgx  = `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
-	domainRgx = `^([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*\.)+[a-zA-Z]{2,}$`
-	urlRegex  = `^(http://|https://|www\.)[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)`
-)
-
 // Adds an error if the string is not a valid email
 func (a *StringArg) IsEmail() *StringArg {
 	if !regexp.MustCompile(emailRgx).MatchString(a.Value) {
@@ -199,7 +200,8 @@ func (a *StringArg) IsDescription() *StringArg {
 
 // Adds an error if the string's length is not in the specified range
 func (a *StringArg) LengthInRange(min, max int) *StringArg {
-	if len(a.Value) < min || len(a.Value) > max {
+	l := len(a.Value)
+	if l < min || l > max {
 		a.AddError("must be between %d and %d characters", min, max)
 	}
 	return a

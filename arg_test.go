@@ -1,23 +1,24 @@
 package arg_test
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
 	"github.com/acudac-com/arg-go"
 )
 
-func TestArg_FallbackIf(t *testing.T) {
-	c := arg.New(time.Time{}).FallbackIf(time.Now(), false)
-	t.Logf("%v", c.Value)
-	if c.Value.IsZero() {
-		c.AddError("should not be zero")
-	}
-	t.Logf("valid: %t", c.Valid())
+func log(thing string, object any) {
+	println(fmt.Sprintf("\033[1;34m%s\033[0m: %v", thing, object))
 }
 
-func Test_Invalid(t *testing.T) {
-	c := arg.New(time.Time{})
-	s := arg.S("asdf").StartsWith("order:")
-	t.Logf("invalid: %t", arg.Invalid(c, s))
+func logErr(thing string, object any) {
+	println(fmt.Sprintf("\033[1;31m%s error\033[0m: %v", thing, object))
+}
+
+func TestArg_FallbackIf(t *testing.T) {
+	x := &time.Time{}
+	c := arg.New(x).FallbackIf(time.Now(), true)
+	log("x", x)
+	log("valid", c.Valid())
 }

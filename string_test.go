@@ -7,6 +7,7 @@ import (
 )
 
 func TestStringArg_Is(t *testing.T) {
-	s := arg.S("test").Is("asdf", "qwer", "test")
-	t.Logf("%v", s.Errors())
+	test := "test"
+	s := arg.S(&test).Is("asdf", "qwer", "tst")
+	log("valid", s.Valid())
 }

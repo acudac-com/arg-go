@@ -31,14 +31,14 @@ func Valid(args ...arg) bool {
 
 // A generic argument.
 type Arg[T any] struct {
-	Value  T
+	value  *T
 	errors []string
 }
 
 // Returns a new instance of an argument with the type of the given value.
 // This argument satisfies the arg interface needed for the Invalid method.
 // You can embed this argument in any other struct to add custom methods to it.
-func New[T any](value T) *Arg[T] {
+func New[T any](value *T) *Arg[T] {
 	return &Arg[T]{value, []string{}}
 }
 
@@ -72,15 +72,83 @@ func (a *Arg[T]) AddError(msg string, args ...any) *Arg[T] {
 // Changes the value to the specified value if condition is true.
 func (a *Arg[T]) FallbackIf(fallback T, condition bool) *Arg[T] {
 	if condition {
-		a.Value = fallback
+		*a.value = fallback
 	}
 	return a
 }
 
-// Returns the value if the provided value is nil, otherwise the fallback
-func FallbackIfNil[T any](value *T, fallback *T) *T {
-	if value == nil {
-		return fallback
+// Changes the value to the specified value if its nil.
+func (a *Arg[T]) FallbackIfNil(fallback T) *Arg[T] {
+	if a.value == nil {
+		*a.value = fallback
 	}
-	return value
+	return a
+}
+
+// A comparable arg
+type ComparableArg[T comparable] struct {
+	*Arg[T]
+}
+
+// Returns a comparable argument instance for the provided value.
+func Comparable[T comparable](value *T) *ComparableArg[T] {
+	custom := New(value)
+	return &ComparableArg[T]{custom}
+}
+
+// Returns a comparable argument instance for the provided value.
+func C[T comparable](value *T) *ComparableArg[T] {
+	return Comparable(value)
+}
+
+// Sets the value to the specified value if its empty (e.g. 0 for number or "" for string)
+func (a *ComparableArg[T]) Default(fallback T) *ComparableArg[T] {
+	var zero T
+	if a.value == nil || *a.value == zero {
+		*a.value = fallback
+	}
+	return a
+}
+
+// Adds an error if the value is zero (e.g. 0 for number or "" for string)
+func (a *ComparableArg[T]) Populated() *ComparableArg[T] {
+	var zero T
+	if a.value == nil || *a.value == zero {
+		a.AddError("must be populated")
+	}
+	return a
+}
+
+// Adds an error if the value is not zero (e.g. 0 for number or "" for string)
+func (a *ComparableArg[T]) Empty() *ComparableArg[T] {
+	var zero T
+	if a.value != nil && *a.value != zero {
+		a.AddError("must be empty")
+	}
+	return a
+}
+
+// Adds an error if the value is not equal to one of the specified values.
+func (a *ComparableArg[T]) Is(values ...T) *ComparableArg[T] {
+	for _, val := range values {
+		if val == *a.value {
+			return a
+		}
+	}
+	if len(values) == 1 {
+		a.AddError("must be %v", values[0])
+	} else if len(values) > 1 {
+		a.AddError("must be one of %v", values)
+	}
+	return a
+}
+
+// Adds an error if the value is equal to one of the specified values.
+func (a *ComparableArg[T]) IsNot(values ...T) *ComparableArg[T] {
+	for _, val := range values {
+		if val == *a.value {
+			a.AddError("%v not allowed", values)
+		}
+	}
+	return a
 }

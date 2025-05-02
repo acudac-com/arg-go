@@ -69,6 +69,12 @@ func (a *Arg[T]) AddError(msg string, args ...any) *Arg[T] {
 	return a
 }
 
+// Adds a new error if the condition is met
+func (a *Arg[T]) AddErrorIf(condition bool, msg string, args ...any) *Arg[T] {
+	a.errors = append(a.errors, fmt.Sprintf(msg, args...))
+	return a
+}
+
 // Changes the value to the specified value if condition is true.
 func (a *Arg[T]) FallbackIf(fallback T, condition bool) *Arg[T] {
 	if condition {

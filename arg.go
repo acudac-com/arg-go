@@ -1,6 +1,10 @@
 package arg
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+	"strings"
+)
 
 // The interface that all arguments must satisfy
 type arg interface {
@@ -27,6 +31,25 @@ func Valid(args ...arg) bool {
 		}
 	}
 	return true
+}
+
+// Returns the first error
+func FirstError(args ...arg) error {
+	for _, arg := range args {
+		if len(arg.Errors()) > 0 {
+			return errors.New(arg.Errors()[0])
+		}
+	}
+	return nil
+}
+
+// Returns all errors as a new error
+func AllErrors(args ...arg) error {
+	var errs []string
+	for _, arg := range args {
+		errs = append(errs, arg.Errors()...)
+	}
+	return errors.New(strings.Join(errs, "; "))
 }
 
 // A generic argument.

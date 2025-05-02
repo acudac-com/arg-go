@@ -7,8 +7,9 @@ type errs struct {
 }
 
 // Will return first error encountered.
-func Errors() *errs {
-	return nil
+func Errors(invalid bool, msg string, args ...any) *errs {
+	var err *errs
+	return err.Add(invalid, msg, args...)
 }
 
 func (c *errs) Add(invalid bool, msg string, args ...any) *errs {

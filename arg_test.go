@@ -12,8 +12,8 @@ func log(thing string, object any) {
 	println(fmt.Sprintf("\033[1;34m%s\033[0m: %v", thing, object))
 }
 
-func logErr(thing string, object any) {
-	println(fmt.Sprintf("\033[1;31m%s error\033[0m: %v", thing, object))
+func logErr(thing string, err error) {
+	println(fmt.Sprintf("\033[1;31m%s error\033[0m: %v", thing, err))
 }
 
 func TestArg_FallbackIf(t *testing.T) {

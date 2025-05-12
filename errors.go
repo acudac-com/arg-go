@@ -9,13 +9,22 @@ type errs struct {
 // Will return first error encountered.
 func Errors(invalid bool, msg string, args ...any) *errs {
 	var err *errs
-	return err.Add(invalid, msg, args...)
+	return err.AddB(invalid, msg, args...)
 }
 
-func (c *errs) Add(invalid bool, msg string, args ...any) *errs {
+func (c *errs) AddB(invalid bool, msg string, args ...any) *errs {
 	if c == nil {
 		if invalid {
 			c = &errs{fmt.Sprintf(msg, args...)}
+		}
+	}
+	return c
+}
+
+func (c *errs) Add(err error) *errs {
+	if c == nil {
+		if err != nil {
+			c = &errs{err.Error()}
 		}
 	}
 	return c

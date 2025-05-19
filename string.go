@@ -1,6 +1,7 @@
 package arg
 
 import (
+	"net"
 	"regexp"
 	"strings"
 )
@@ -73,10 +74,29 @@ func (a *StringArg) Matches(regex string) *StringArg {
 	return a
 }
 
-// Adds an error if the string is not a valid email
+// Adds an error if the string is not a valid email. Rather use
+// IsEmailWithExistingMx, unless you do not care about the email's existance.
 func (a *StringArg) IsEmail() *StringArg {
 	if !regexp.MustCompile(emailRgx).MatchString(*a.value) {
 		a.AddError("must be a valid email address")
+	}
+	return a
+}
+
+// Adds an error if the email is not valid or tis provider's MX record cannot be
+// found.
+func (a *StringArg) IsEmailWithExistingMx() *StringArg {
+	if !regexp.MustCompile(emailRgx).MatchString(*a.value) {
+		a.AddError("must be a valid email address")
+		return a
+	}
+
+	// find mx
+	emailParts := strings.Split(*a.value, "@")
+	domain := emailParts[1]
+	mxRecords, err := net.LookupMX(domain)
+	if err != nil || len(mxRecords) == 0 {
+		a.AddError("email dns must have valid mx record")
 	}
 	return a
 }

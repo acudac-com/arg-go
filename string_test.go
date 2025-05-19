@@ -7,7 +7,7 @@ import (
 )
 
 func TestStringArg_Is(t *testing.T) {
-	test := "test"
-	s := arg.S(&test).Is("asdf", "qwer", "tst")
+	test := "jan@alisx123.com"
+	s := arg.S(&test).IsEmailWithExistingMx()
 	log("valid", s.Valid())
 }

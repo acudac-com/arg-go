@@ -49,6 +49,9 @@ func AllErrors(args ...arg) error {
 	for _, arg := range args {
 		errs = append(errs, arg.Errors()...)
 	}
+	if len(errs) == 0 {
+		return nil
+	}
 	return errors.New(strings.Join(errs, "; "))
 }
 
